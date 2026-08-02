@@ -74,7 +74,7 @@ init_vbl:
 if VBL_ON_LINE_INTERRUPT
 	nextreg $c4,2				; no ULA but Line interrupt 
     nextreg $22,%110            ; disable ula , enable line , MSB line = 0
-    nextreg $23,192-64             ; so line interrupt on xxx
+    nextreg $23,192             ; so line interrupt on xxx
 else
 	nextreg $c4,1				; ULA interrupt no Line
 endif

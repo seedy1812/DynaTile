@@ -7,7 +7,7 @@ WINDOW_WIDTH:		equ +(18*2)		; width in tiles ( 16 pixels wide so times 2)
 WINDOW_HEIGHT:     	equ +(14*2+1)	; 10 tiles high (16 pixels so times 2) + 1 extra
 
 MAP_WIDTH:			equ +(18*2*2)	; how may bytes wide
-MAP_HEIGHT 			equ +(532*8)		; height in pixels
+MAP_HEIGHT 			equ +(532*8)-8		; height in pixels
 HW_WIDTH:      		equ 40*2		; hw ism 40 tiles *2
 
 WINDOW_PIXEL_HEIGHT equ (WINDOW_HEIGHT*8)-8	; this is height what is seen on screen
@@ -92,7 +92,7 @@ NUM_MAP_PAGES 	equ 4
 
 CODE_PAGE 		equ 2*2
 HW_TILES_PAGE 	equ 5*2
-DYNA_PAGE 		equ 11*2
+DYNA_PAGE 		equ 9*2
 
 HW_ATTR_PAGE	equ $e
 GAME_MAP_PAGE 	equ DYNA_PAGE+2
@@ -113,6 +113,13 @@ GAME_MAP_PAGE_ADDR equ 0
 	seg 	DYNA_SEG,				DYNA_PAGE:$0000,$0000
 
     seg     CODE_SEG
+
+db "JOY1"	
+JOY_Current: db 0
+JOY_JustPressed: db 0
+JOY_JustReleased: db 0
+db "JOY2"	
+
 start:
 
 
@@ -134,13 +141,42 @@ start:
 frame_loop:
 	call wait_vbl
 
+
+if 0
+	ld hl,JOY_Current
+
+	my_break
+
+	ld b,(HL)		; prev
+	in a,($1f)		; cur
+	ld (hl),a
+
+	xor b			; xor prev
+	and (hl)
+	ld (JOY_JustPressed),a
+
+	ld a,(hl)
+	cpl				; start is not currently pressed
+	and b			; and with want is pressed
+	ld (JOY_JustReleased),a
+
+
+;	jr z, .no_move
+endif
 	border 7
 
 	call backdrop_move
 
+.no_move:
+
+	call backdrop_copy
+
+
 	call backdrop_update
 
 	border 0
+
+	in a,($fe)
 
 	jr frame_loop
 
@@ -164,6 +200,7 @@ StackEnd:
 StackStart:
 	ds  2
 
+;include "debug.s"
 include "irq.s"
 
 if USE_DYNA_TILES = 1

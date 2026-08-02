@@ -16,7 +16,7 @@ set_pal:
         djnz .loop
         ret
 
-backdrop_flags: db 0
+backdrop_flags: db 1
 backdrop_MMU5: db 0
 backdrop_MMU6: db 0
 backdrop_MMU7: db 0
@@ -75,6 +75,10 @@ if USE_DYNA_TILES = 1
         call dynatiles_start
 endif
         call backdrop_display
+        call backdrop_update
+;        my_break
+;        call backdrop_remove
+;        my_break
 
         ret
 
@@ -141,35 +145,36 @@ backdrop_copy:
         ret z
 
         call backdrop_store_MMU
+        ex af,af'
 if USE_DYNA_TILES = 1
         call dynatile_DMA_Start
 endif
+        ex af,af'
 
         ld de,(MAP_PREV_Y)
         jp  nc,.scrolling_up
 
 .scrolling_down:
-        border 4
         add de,WINDOW_PIXEL_HEIGHT
         call backdrop_remove_line       
-        border 5
+        border 1
 
         ld de,(MAP_Y)
-        call backdrop_copy_line       
-        border 6
+        call backdrop_copy_line    
+        border 2
+
 
         jr .return
 
 ;; y increasing - so remove line at top and add to bottom
 .scrolling_up:
-        border 4
+        border 3
         call backdrop_remove_line       
-        border 5
+        border 4
 
         ld de,(MAP_Y)
         add de,WINDOW_PIXEL_HEIGHT
         call backdrop_copy_line       
-        border 6
 
 .return:
         ld de,(MAP_Y)
@@ -224,8 +229,8 @@ backdrop_move
         ld a,b
         or c
         jr z, .go_down
-        add bc,-4
-;        dec bc
+;        add bc,-8
+        dec bc
         ld (MAP_Y),bc
         ret
 .go_down:
@@ -241,8 +246,8 @@ backdrop_move
         or l
         pop hl
         jr z,.go_up
-        add bc,4
-;        inc bc
+;        add bc,8
+       inc bc
         ld (MAP_Y),bc
         ret
 .go_up:
@@ -263,13 +268,11 @@ backdrop_update:
         nextreg LAYER3_SCROLL_X_MSB,a
         ld a, l
         nextreg LAYER3_SCROLL_X_LSB,a
+
         // set at top of the map - rember 8 pixel border at top
         ld a, (MAP_Y)
         sub WINDOW_START_Y
         nextreg LAYER3_SCROLL_Y,a
-
-        call backdrop_copy
-
         ret
 
 backdrop_display:
@@ -336,14 +339,15 @@ if USE_DYNA_TILES = 1
 endif
 
         ld de,(MAP_Y)
+        add de,WINDOW_HEIGHT *8
         ld b, WINDOW_HEIGHT
 .loop:
+        add de,-8
         push bc
         push de
         call backdrop_remove_line
 
         pop de
-        add de,8
         pop bc
 
         djnz .loop
@@ -353,11 +357,14 @@ endif
 
 ; de = y
 backdrop_copy_line:
+;        call Copy_Debug_Y
+
         push de
         call calc_map_offset
 
         pop de
         call calc_layer3_offset
+
 
 ;fix this - problems with addresses and pages
         add de, HW_MAP
@@ -394,6 +401,8 @@ endif
         ret
 
 backdrop_remove_line:
+;        call Delete_Debug_Y
+
 if USE_DYNA_TILES = 1
         call calc_layer3_offset
         add de, HW_ATTR_OFFSET
@@ -412,6 +421,7 @@ if USE_DYNA_TILES = 1
         pop bc
         djnz .loop
 endif
+;        my_break
         ret
 
 

@@ -1,3 +1,4 @@
+        SEG_Code
 
 TXT_Released:  db "Release = %d : %d",0
 TXT_Released1: dw 0
@@ -16,6 +17,17 @@ TXT_FirstEntry3: dw 03
 
 TXT_Count:  db "Count = %d",0
 TXT_Count1: dw 0
+
+TXT_CMapY:       db "COPY MAP_Y [%d]= %d %d",0
+TXT_CMAPY_Line:  dw 0
+TXT_CMAPY_Val:  dw 0
+TXT_CMAPY_Prev:  dw 0
+
+TXT_DMapY:       db "DELE MAY_Y [%d]= %d %d",0
+TXT_DMAPY_Line:  dw 0
+TXT_DMAPY_Val:  dw 0
+TXT_DMAPY_Prev:  dw 0
+
 
 ;\0 = type
 ;\1 = addrlo
@@ -168,3 +180,39 @@ dynatile_debug:
         pop af
         ret
 
+Copy_Debug_Y:
+        ret
+        push de
+        ld b,3
+        bsra de,b
+        ld (TXT_CMAPY_LIne),de
+
+        ld de,(MAP_Y)
+        bsra de,b
+        ld (TXT_CMAPY_Val),de
+
+        ld de,(MAP_PREV_Y)
+        bsra de,b
+        ld (TXT_CMAPY_Prev),de
+        pop de
+        _DEBUGOUT TXT_CMapY
+        ret
+
+Delete_Debug_Y
+        ret
+        push de
+
+        ld b,3
+        bsra de,b
+        ld (TXT_DMAPY_LIne),de
+
+        ld de,(MAP_Y)
+        bsra de,b
+        ld (TXT_DMAPY_Val),de
+
+        ld de,(MAP_PREV_Y)
+        bsra de,b
+        ld (TXT_DMAPY_Prev),de
+        pop de
+        _DEBUGOUT TXT_DMapY
+        ret

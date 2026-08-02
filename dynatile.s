@@ -243,6 +243,24 @@ dynatiles_Remove_Cont:
         ld d,(hl)
 
         ld (HWTileIndex),de
+if 0
+        push af
+        push bc
+        ld b,5
+        bsla de,b
+        add de,$4000
+
+        ld bc,8*8/2-1
+        ld h,d
+        ld l,e
+        inc e
+        ld (hl),-1
+        ldir
+
+        pop bc
+        pop af
+;        my_break
+endif
 
         ; no clear out HW to SW linnk
         ld de,(HWTileIndex)
@@ -293,7 +311,7 @@ dynatiles_FrameAdd:
 dynatile_DMA_Start:     
 ; set up the dma transfer - dont need to set source and dest (Page)
     ld	hl,DMAC_CopyStart
-    ld  bc, DMA_PORT+(DMAC_CopyStart_End-DMAC_CopyStart)*256
+    ld  bc, DMA_PORT+(DMAC_CopyStart_Length)*256
     otir
     ret
 
@@ -365,7 +383,7 @@ DMAC_CopyStart:
 	db %00010000 ;WR2 - Port B address increments
 	db $cf ;WR6 - Load   
 DMAC_CopyStart_End:
-
+DMAC_CopyStart_Length equ *-DMAC_CopyStart
 ;/////////////////////////////////////////////////
 
 DMAC_QuickCopy
